@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Phone,
     MapPin,
@@ -23,6 +24,23 @@ import {
  * TEMPLATE CONFIGURATION - EDIT THIS FOR PERMANENT CHANGES
  * =================================================================================
  */
+
+// Animation Variants
+const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+};
+
+const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.2
+        }
+    }
+};
+
 const initialConfig = {
     // Brand Identity
     clinicName: "All Care Dentist",
@@ -112,13 +130,28 @@ export default function DentalWebsiteDemo() {
         setConfig(prev => ({ ...prev, [key]: value }));
     };
 
+    // Smooth Scroll Handler
+    const handleScroll = (e, targetId) => {
+        e.preventDefault();
+        const element = document.getElementById(targetId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+            setIsMobileMenuOpen(false); // Close mobile menu if open
+        }
+    };
+
     return (
         <div className={`min-h-screen ${theme.font} text-slate-600 antialiased selection:bg-blue-100 selection:text-blue-900`}>
 
             {/* =======================
           NAVBAR
       ======================== */}
-            <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? theme.navBg : 'bg-transparent text-white'}`}>
+            <motion.nav
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.5 }}
+                className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? theme.navBg : 'bg-transparent text-white'}`}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-20">
                         {/* Logo Area */}
@@ -137,6 +170,7 @@ export default function DentalWebsiteDemo() {
                                 <a
                                     key={item}
                                     href={`#${item.toLowerCase()}`}
+                                    onClick={(e) => handleScroll(e, item.toLowerCase())}
                                     className={`text-sm font-medium hover:opacity-70 transition-colors ${scrolled ? theme.textDark : 'text-white/90'}`}
                                 >
                                     {item}
@@ -160,19 +194,34 @@ export default function DentalWebsiteDemo() {
                 </div>
 
                 {/* Mobile Dropdown */}
-                {isMobileMenuOpen && (
-                    <div className="md:hidden bg-white border-t p-4 shadow-xl animate-fade-in">
-                        <div className="flex flex-col space-y-4">
-                            {['Home', 'Services', 'Technology', 'Contact'].map((item) => (
-                                <a key={item} href="#" className="text-slate-600 font-medium py-2">{item}</a>
-                            ))}
-                            <button className={`${theme.primary} text-white px-6 py-3 rounded-lg font-semibold w-full`}>
-                                Book Now
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </nav>
+                <AnimatePresence>
+                    {isMobileMenuOpen && (
+                        <motion.div
+                            key="mobile-menu"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="md:hidden bg-white border-t shadow-xl overflow-hidden"
+                        >
+                            <div className="p-4 flex flex-col space-y-4">
+                                {['Home', 'Services', 'Technology', 'Contact'].map((item) => (
+                                    <a
+                                        key={item}
+                                        href={`#${item.toLowerCase()}`}
+                                        onClick={(e) => handleScroll(e, item.toLowerCase())}
+                                        className="text-slate-600 font-medium py-2"
+                                    >
+                                        {item}
+                                    </a>
+                                ))}
+                                <button className={`${theme.primary} text-white px-6 py-3 rounded-lg font-semibold w-full`}>
+                                    Book Now
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.nav>
 
             {/* =======================
           HERO SECTION
@@ -189,31 +238,44 @@ export default function DentalWebsiteDemo() {
                 </div>
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center lg:text-left">
-                    <div className="lg:w-2/3">
-                        <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-6`}>
+                    <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={staggerContainer}
+                        className="lg:w-2/3"
+                    >
+                        <motion.div variants={fadeInUp} className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white mb-6`}>
                             <Award className="h-4 w-4 text-yellow-400" />
                             <span className="text-sm font-medium">Best Dental Clinic in {config.city}</span>
-                        </div>
+                        </motion.div>
 
-                        <h1 className="text-4xl lg:text-7xl font-bold text-white leading-tight mb-6">
+                        <motion.h1 variants={fadeInUp} className="text-4xl lg:text-7xl font-bold text-white leading-tight mb-6">
                             {config.tagline}
-                        </h1>
+                        </motion.h1>
 
-                        <p className="text-lg lg:text-xl text-white/80 mb-8 leading-relaxed max-w-2xl">
+                        <motion.p variants={fadeInUp} className="text-lg lg:text-xl text-white/80 mb-8 leading-relaxed max-w-2xl">
                             {config.subTagline} Join thousands of happy smiles at {config.clinicName}.
-                        </p>
+                        </motion.p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                            <button className={`${theme.primary} ${theme.primaryHover} text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-blue-500/25 transition-all flex items-center justify-center space-x-2`}>
+                        <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className={`${theme.primary} ${theme.primaryHover} text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-blue-500/25 transition-all flex items-center justify-center space-x-2`}
+                            >
                                 <Calendar className="h-5 w-5" />
                                 <span>Book Consultation</span>
-                            </button>
-                            <button className="bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-slate-900 transition-all flex items-center justify-center space-x-2">
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.05, backgroundColor: "rgba(255, 255, 255, 1)", color: "#0f172a" }}
+                                whileTap={{ scale: 0.95 }}
+                                className="bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-slate-900 transition-all flex items-center justify-center space-x-2"
+                            >
                                 <Phone className="h-5 w-5" />
                                 <span>{config.phoneNumber}</span>
-                            </button>
-                        </div>
-                    </div>
+                            </motion.button>
+                        </motion.div>
+                    </motion.div>
                 </div>
             </section>
 
@@ -221,14 +283,20 @@ export default function DentalWebsiteDemo() {
           STATS SECTION
       ======================== */}
             <section className="relative z-20 -mt-10 max-w-6xl mx-auto px-4">
-                <div className="bg-white rounded-2xl shadow-xl p-8 grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <motion.div
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={staggerContainer}
+                    className="bg-white rounded-2xl shadow-xl p-8 grid grid-cols-2 lg:grid-cols-4 gap-8"
+                >
                     {config.stats.map((stat, idx) => (
-                        <div key={idx} className="text-center lg:text-left border-b lg:border-b-0 lg:border-r border-slate-100 last:border-0 pb-4 lg:pb-0">
+                        <motion.div variants={fadeInUp} key={idx} className="text-center lg:text-left border-b lg:border-b-0 lg:border-r border-slate-100 last:border-0 pb-4 lg:pb-0">
                             <div className={`text-4xl font-bold ${theme.accent} mb-1`}>{stat.value}</div>
                             <div className="text-slate-500 font-medium text-sm uppercase tracking-wide">{stat.label}</div>
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
             </section>
 
             {/* =======================
@@ -241,9 +309,20 @@ export default function DentalWebsiteDemo() {
                         <h3 className={`text-3xl lg:text-4xl font-bold ${theme.textDark}`}>Comprehensive Dental Care</h3>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <motion.div
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        variants={staggerContainer}
+                        className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+                    >
                         {config.services.map((service, idx) => (
-                            <div key={idx} className="group bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+                            <motion.div
+                                variants={fadeInUp}
+                                whileHover={{ y: -10, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+                                key={idx}
+                                className="group bg-white p-8 rounded-2xl shadow-sm border border-slate-100"
+                            >
                                 <div className={`w-14 h-14 rounded-xl ${theme.bgSoft} ${theme.accent} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                                     {React.cloneElement(service.icon, { size: 28 })}
                                 </div>
@@ -252,19 +331,25 @@ export default function DentalWebsiteDemo() {
                                 <a href="#" className={`inline-flex items-center text-sm font-semibold ${theme.accent} group-hover:opacity-70`}>
                                     Learn More <ArrowRight className="ml-1 h-4 w-4" />
                                 </a>
-                            </div>
+                            </motion.div>
                         ))}
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
             {/* =======================
           TECHNOLOGY & SHOWCASE
       ======================== */}
-            <section id="technology" className="py-20 bg-white">
+            <section id="technology" className="py-20 bg-white overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col lg:flex-row items-center gap-16">
-                        <div className="lg:w-1/2">
+                        <motion.div
+                            initial={{ opacity: 0, x: -50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8 }}
+                            className="lg:w-1/2"
+                        >
                             <h2 className={`text-3xl lg:text-5xl font-bold ${theme.textDark} mb-6 leading-tight`}>
                                 State of the Art <br /> <span className={`text-transparent bg-clip-text bg-gradient-to-r ${activeTheme === 'modernBlue' ? 'from-blue-600 to-cyan-500' : 'from-stone-800 to-amber-600'}`}>Technology</span>
                             </h2>
@@ -275,18 +360,31 @@ export default function DentalWebsiteDemo() {
 
                             <div className="space-y-6">
                                 {config.technology.map((tech, idx) => (
-                                    <div key={idx} className="flex items-start space-x-4">
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: idx * 0.2 }}
+                                        key={idx}
+                                        className="flex items-start space-x-4"
+                                    >
                                         <img src={tech.image} alt={tech.title} className="w-24 h-24 rounded-lg object-cover shadow-md" />
                                         <div>
                                             <h4 className={`text-lg font-bold ${theme.textDark}`}>{tech.title}</h4>
                                             <p className="text-slate-500 text-sm mt-1">{tech.desc}</p>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))}
                             </div>
-                        </div>
+                        </motion.div>
 
-                        <div className="lg:w-1/2 relative">
+                        <motion.div
+                            initial={{ opacity: 0, x: 50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8 }}
+                            className="lg:w-1/2 relative"
+                        >
                             <div className={`absolute inset-0 bg-gradient-to-tr ${activeTheme === 'modernBlue' ? 'from-blue-100 to-transparent' : 'from-amber-100 to-transparent'} rounded-[2rem] transform rotate-3`}></div>
                             <img
                                 src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=1000"
@@ -304,7 +402,7 @@ export default function DentalWebsiteDemo() {
                                 </div>
                                 <p className={`font-bold ${theme.textDark}`}>"The most modern clinic I've ever visited!"</p>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>
@@ -314,19 +412,37 @@ export default function DentalWebsiteDemo() {
       ======================== */}
             <section id="testimonials" className={`py-20 ${theme.bgSoft} overflow-hidden`}>
                 <div className="max-w-7xl mx-auto px-4 text-center">
-                    <h2 className={`text-3xl font-bold ${theme.textDark} mb-12`}>Patient Stories</h2>
-                    <div className="flex flex-wrap justify-center gap-6">
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className={`text-3xl font-bold ${theme.textDark} mb-12`}
+                    >
+                        Patient Stories
+                    </motion.h2>
+                    <motion.div
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        variants={staggerContainer}
+                        className="flex flex-wrap justify-center gap-6"
+                    >
                         {config.testimonials.map((t, i) => (
-                            <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-sm flex-1 min-w-[300px]">
+                            <motion.div
+                                variants={fadeInUp}
+                                whileHover={{ scale: 1.05 }}
+                                key={i}
+                                className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-sm flex-1 min-w-[300px]"
+                            >
                                 <div className="flex justify-center mb-4">
                                     {[...Array(t.rating)].map((_, i) => <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />)}
                                 </div>
                                 <p className="text-slate-600 italic mb-6">"{t.text}"</p>
                                 <div className="font-bold text-slate-900">{t.name}</div>
                                 <div className="text-xs text-slate-400 uppercase tracking-widest mt-1">Patient</div>
-                            </div>
+                            </motion.div>
                         ))}
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
